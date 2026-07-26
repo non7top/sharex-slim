@@ -57,6 +57,7 @@ namespace ShareX.ScreenCaptureLib
 
         // Arrow drawing
         public ArrowHeadDirection ArrowHeadDirection { get; set; } = ArrowHeadDirection.End;
+        public bool ArrowShowLength { get; set; } = false;
 
         // Text (Outline) drawing
         public TextDrawingOptions TextOutlineOptions { get; set; } = new TextDrawingOptions()

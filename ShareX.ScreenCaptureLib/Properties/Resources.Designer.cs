@@ -2287,7 +2287,16 @@ namespace ShareX.ScreenCaptureLib.Properties {
                 return ResourceManager.GetString("ShapeManager_FreehandCurveInterpolation", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show length.
+        /// </summary>
+        internal static string ShapeManager_ArrowShowLength {
+            get {
+                return ResourceManager.GetString("ShapeManager_ArrowShowLength", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Smoothing:.
         /// </summary>
