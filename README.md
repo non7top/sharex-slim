@@ -40,7 +40,8 @@ between the arrow's endpoints.
 ## Building
 
 Windows binaries are produced by GitHub Actions (`.github/workflows/build.yml`)
-for Release/Debug × x64/ARM64.
+for Release and Debug, x64 only. The projects can still target ARM64 locally
+(`make build PLATFORM=ARM64`); CI just does not build it.
 
 Locally, everything builds in a disposable container — only Docker is needed:
 

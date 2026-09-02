@@ -16,17 +16,18 @@ permissions:
 
 jobs:
   build:
-    name: Build (${{ matrix.configuration }}, ${{ matrix.platform }})
+    name: Build (${{ matrix.configuration }})
     runs-on: windows-latest
 
     strategy:
       fail-fast: false
       matrix:
         configuration: [Release, Debug]
-        platform: [x64, ARM64]
 
     env:
       SOLUTION_FILE_PATH: ShareX.Slim.sln
+      PLATFORM: x64
+      RUNTIME_ID: win-x64
 
     steps:
       - name: Checkout
@@ -37,12 +38,6 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Set RUNTIME_ID
-        run: |
-          $platform = if ("${{ matrix.platform }}" -eq "ARM64") { "arm64" } else { "x64" }
-          echo "PLATFORM=$platform" >> $env:GITHUB_ENV
-          echo "RUNTIME_ID=win-$platform" >> $env:GITHUB_ENV
-
       - name: Restore NuGet packages
         run: dotnet restore --runtime "${{ env.RUNTIME_ID }}" "${{ env.SOLUTION_FILE_PATH }}"
 
@@ -50,7 +45,7 @@ jobs:
         run: >
           dotnet build --no-restore
           --configuration "${{ matrix.configuration }}"
-          -p:Platform="${{ matrix.platform }}"
+          -p:Platform="${{ env.PLATFORM }}"
           --self-contained true /m:1
           "${{ env.SOLUTION_FILE_PATH }}"
 
