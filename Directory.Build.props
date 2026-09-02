@@ -5,6 +5,8 @@
     <Copyright>Copyright (c) 2007-2026 ShareX Team</Copyright>
     <Version>21.0.0</Version>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
+    <!-- Lets the Windows-targeted projects compile on non-Windows hosts (CI/containers). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

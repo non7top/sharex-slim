@@ -1,0 +1,31 @@
+services:
+  dotnet:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: sharex-slim-build:local
+    # Match the host user so bind-mounted build output stays host-owned.
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    working_dir: /src
+    entrypoint: ["dotnet"]
+    volumes:
+      - .:/src
+      - nuget:/nuget
+      - dotnet-home:/dotnet-home
+
+  shell:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: sharex-slim-build:local
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    working_dir: /src
+    entrypoint: ["bash"]
+    volumes:
+      - .:/src
+      - nuget:/nuget
+      - dotnet-home:/dotnet-home
+
+volumes:
+  nuget:
+  dotnet-home:
