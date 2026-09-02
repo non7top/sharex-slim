@@ -49,8 +49,53 @@ jobs:
           --self-contained true /m:1
           "${{ env.SOLUTION_FILE_PATH }}"
 
-      - name: Upload artifact
+      - name: Ensure Inno Setup is available
+        if: matrix.configuration == 'Release'
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            Write-Host "Inno Setup not found on the runner; installing it."
+            choco install innosetup -y --no-progress
+          }
+          if (-not (Test-Path $iscc)) {
+            throw "Inno Setup compiler still missing at $iscc"
+          }
+          Write-Host "Using $iscc"
+
+      - name: Package installer and portable zip
+        if: matrix.configuration == 'Release'
+        run: >
+          & "ShareX.Setup\bin\Release\win-x64\ShareX-slim.Setup.exe"
+          -silent -job Release
+
+      - name: Read APP_VERSION
+        if: matrix.configuration == 'Release'
+        run: |
+          $exe = "ShareX\bin\Release\win-x64\ShareX-slim.exe"
+          $version = (Get-Item $exe).VersionInfo.ProductVersion
+          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Upload installer
+        if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v7
         with:
-          name: ShareX-slim-${{ matrix.configuration }}-${{ env.PLATFORM }}
-          path: ShareX/bin/${{ matrix.configuration }}/${{ env.RUNTIME_ID }}/
+          name: ShareX-slim-setup-${{ env.PLATFORM }}
+          path: |
+            Output/ShareX-slim-*-setup-${{ env.PLATFORM }}.exe
+            Output/ShareX-slim-*-setup-${{ env.PLATFORM }}.exe.sha256
+
+      - name: Upload portable zip
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ShareX-slim-portable-${{ env.PLATFORM }}
+          path: |
+            Output/ShareX-slim-*-portable-${{ env.PLATFORM }}.zip
+            Output/ShareX-slim-*-portable-${{ env.PLATFORM }}.zip.sha256
+
+      - name: Upload raw build output
+        if: matrix.configuration == 'Debug'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ShareX-slim-Debug-${{ env.PLATFORM }}
+          path: ShareX/bin/Debug/${{ env.RUNTIME_ID }}/

@@ -39,11 +39,24 @@ between the arrow's endpoints.
 
 ## Building
 
-Windows binaries are produced by GitHub Actions (`.github/workflows/build.yml`)
-for Release and Debug, x64 only. The projects can still target ARM64 locally
-(`make build PLATFORM=ARM64`); CI just does not build it.
+GitHub Actions (`.github/workflows/build.yml`) builds x64 only and, for the
+Release configuration, publishes two artifacts plus their `.sha256` files:
 
-Locally, everything builds in a disposable container — only Docker is needed:
+- `ShareX-slim-<version>-setup-x64.exe` — Inno Setup installer. Installs per-user
+  or machine-wide, optional desktop/send-to/startup shortcuts, an "Annotate with
+  ShareX-slim" Explorer context-menu entry, and an option to free the Print
+  Screen key from the Snipping Tool. Its `AppId` differs from upstream ShareX's,
+  so it can never upgrade or uninstall a real ShareX installation.
+- `ShareX-slim-<version>-portable-x64.zip` — unzip and run; it ships a `Portable`
+  marker file so all settings stay inside the folder.
+
+The Debug configuration is still built as a compile check and uploads the raw
+output folder. ARM64 remains a valid local target (`make build PLATFORM=ARM64`);
+CI does not build it.
+
+Locally, everything builds in a disposable container — only Docker is needed
+(the container compiles the code; producing the installer needs Windows, since
+Inno Setup runs there):
 
 ```sh
 make build      # build ShareX.Slim.sln (Release|x64) in the container
@@ -70,6 +83,7 @@ On Windows with Visual Studio, open `ShareX.Slim.sln` and build `Release|x64`.
 | `ShareX.HelpersLib` | Shared helpers (imaging, clipboard, name parser, ...) |
 | `ShareX.ImageEffectsLib` | Image effects, used by the editor and after-capture |
 | `ShareX.Avalonia` | Shared Avalonia theming, controls and bootstrap |
+| `ShareX.Setup` | Packaging tool: builds the installer and the portable zip |
 
 ## Relationship to upstream
 

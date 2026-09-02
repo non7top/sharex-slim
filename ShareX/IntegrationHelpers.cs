@@ -36,7 +36,7 @@ namespace ShareX
         private static readonly string ApplicationPath = $"\"{Application.ExecutablePath}\"";
         private static readonly string FileIconPath = $"\"{FileHelpers.GetAbsolutePath("ShareX_File_Icon.ico")}\"";
 
-        private static readonly string ShellExtMenuName = "ShareX";
+        private static readonly string ShellExtMenuName = Program.AppName;
         private static readonly string ShellExtMenuFiles = $@"Software\Classes\*\shell\{ShellExtMenuName}";
         private static readonly string ShellExtMenuFilesCmd = $@"{ShellExtMenuFiles}\command";
         private static readonly string ShellExtMenuDirectory = $@"Software\Classes\Directory\shell\{ShellExtMenuName}";
@@ -45,7 +45,7 @@ namespace ShareX
         private static readonly string ShellExtIcon = $"{ApplicationPath},0";
         private static readonly string ShellExtPath = $"{ApplicationPath} \"%1\"";
 
-        private static readonly string ShellExtEditName = "ShareXImageEditor";
+        private static readonly string ShellExtEditName = Program.AppName + "ImageEditor";
         private static readonly string ShellExtEditImage = $@"Software\Classes\SystemFileAssociations\image\shell\{ShellExtEditName}";
         private static readonly string ShellExtEditImageCmd = $@"{ShellExtEditImage}\command";
         private static readonly string ShellExtEditDesc = Resources.IntegrationHelpers_EditWithShareX;
