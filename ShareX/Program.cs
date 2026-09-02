@@ -46,17 +46,14 @@ namespace ShareX
 {
     internal static class Program
     {
-        public const string AppName = "ShareX";
-        public const string MutexName = "82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC";
+        public const string AppName = "ShareX-slim";
+        // A fork-specific mutex so ShareX-slim and upstream ShareX can run side by side.
+        public const string MutexName = "43B294CB-F616-405F-9DC7-DFDDB0290164";
         public static readonly string PipeName = $"{Environment.MachineName}-{Environment.UserName}-{AppName}";
 
         public const ShareXBuild Build =
 #if RELEASE
             ShareXBuild.Release;
-#elif STEAM
-            ShareXBuild.Steam;
-#elif MicrosoftStore
-            ShareXBuild.MicrosoftStore;
 #elif DEBUG
             ShareXBuild.Debug;
 #else

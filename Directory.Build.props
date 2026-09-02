@@ -1,16 +1,17 @@
 <Project>
   <PropertyGroup>
     <Company>ShareX Team</Company>
-    <Product>ShareX</Product>
+    <Product>ShareX-slim</Product>
     <Copyright>Copyright (c) 2007-2026 ShareX Team</Copyright>
-    <Version>21.0.0</Version>
+    <!-- ShareX-slim's own version. Forked from upstream ShareX 21.0.0. -->
+    <Version>1.0.0</Version>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
     <!-- Lets the Windows-targeted projects compile on non-Windows hosts (CI/containers). -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <Configurations>Release;Debug;Steam;MicrosoftStore;MicrosoftStoreDebug</Configurations>
+    <Configurations>Release;Debug</Configurations>
     <Platforms>x64;ARM64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
@@ -20,18 +21,5 @@
   <PropertyGroup Condition="'$(Platform)' == 'ARM64'">
     <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
     <PlatformTarget>ARM64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Steam'">
-    <DefineConstants>$(DefineConstants);STEAM</DefineConstants>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'MicrosoftStore'">
-    <DefineConstants>$(DefineConstants);MicrosoftStore</DefineConstants>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'MicrosoftStoreDebug'">
-    <DefineConstants>$(DefineConstants);DEBUG;MicrosoftStore</DefineConstants>
-    <DebugSymbols>true</DebugSymbols>
-    <Optimize>false</Optimize>
   </PropertyGroup>
 </Project>

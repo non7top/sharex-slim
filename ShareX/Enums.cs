@@ -37,8 +37,6 @@ namespace ShareX
     {
         Debug,
         Release,
-        Steam,
-        MicrosoftStore,
         Unknown
     }
 

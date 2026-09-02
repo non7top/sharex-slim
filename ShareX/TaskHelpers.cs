@@ -43,10 +43,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ZXing;
-using ZXing.Common;
-using ZXing.QrCode;
-using ZXing.Windows.Compatibility;
 
 namespace ShareX
 {

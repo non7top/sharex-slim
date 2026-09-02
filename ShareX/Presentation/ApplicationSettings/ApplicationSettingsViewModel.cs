@@ -570,8 +570,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         _editWithShareX = IntegrationHelpers.CheckEditShellContextMenuButton();
         _sendToMenu = IntegrationHelpers.CheckSendToMenuButton();
 #endif
-#if STEAM
-#endif
     }
 
     private void RefreshStartWithWindows()

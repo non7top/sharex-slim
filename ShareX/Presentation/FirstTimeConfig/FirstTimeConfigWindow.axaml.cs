@@ -41,7 +41,6 @@ public sealed class FirstTimeConfigViewModel : INotifyPropertyChanged
     private string _startWithWindowsText = string.Empty;
     private bool _shellContextMenu;
     private bool _sendToMenu;
-    private bool _steamShowInApp;
     private string _statusMessage = string.Empty;
 
     public bool StartWithWindows
@@ -101,7 +100,6 @@ public sealed class FirstTimeConfigViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool SteamOptionVisible { get; }
 
     public string StatusMessage
     {
@@ -122,13 +120,6 @@ public sealed class FirstTimeConfigViewModel : INotifyPropertyChanged
         RefreshStartupState();
         _shellContextMenu = ReadOnMainThread(IntegrationHelpers.CheckShellContextMenuButton);
         _sendToMenu = ReadOnMainThread(IntegrationHelpers.CheckSendToMenuButton);
-
-#if STEAM
-        SteamOptionVisible = true;
-        _steamShowInApp = ReadOnMainThread(IntegrationHelpers.CheckSteamShowInApp);
-#else
-        SteamOptionVisible = false;
-#endif
     }
 
     private void RefreshStartupState()

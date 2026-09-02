@@ -45,11 +45,7 @@ namespace ShareX
         {
             get
             {
-#if STEAM
-                return FileHelpers.GetAbsolutePath("../ShareX_Launcher.exe");
-#else
                 return Application.ExecutablePath;
-#endif
             }
         }
 
