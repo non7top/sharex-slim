@@ -54,7 +54,7 @@ Source: "{#MyAppReleaseDirectory}\*.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\*.json"; DestDir: {app}; Flags: ignoreversion
 Source: "{#MyAppRootDirectory}\Licenses\*.txt"; DestDir: {app}\Licenses; Flags: ignoreversion
 Source: "{#MyAppReleaseDirectory}\ShareX_File_Icon.ico"; DestDir: {app}; Flags: ignoreversion
-Source: "{#MyAppReleaseDirectory}\*\*.resources.dll"; DestDir: {app}\Languages; Flags: ignoreversion recursesubdirs
+Source: "{#MyAppReleaseDirectory}\*.resources.dll"; DestDir: {app}\Languages; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppFileName}"; WorkingDir: "{app}"
