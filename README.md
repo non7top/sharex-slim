@@ -11,10 +11,18 @@ database, no browser extension host, no standalone image editor.
 
 - **Capture** — fullscreen, monitor, active/selected window, region (normal,
   light and transparent styles), last region, scrolling capture, auto capture.
-- **Annotate** — the post-capture editor from `ShareX.ScreenCaptureLib`: arrows,
-  shapes, text, highlight, blur, pixelate, step numbers, crop and so on. This is
-  the editor that opens *after* the capture is triggered and *before* the file is
-  written, which is the whole point of the fork.
+- **Annotate** — the editor from `ShareX.ScreenCaptureLib`: arrows, shapes, text,
+  highlight, blur, pixelate, step numbers, crop and so on. Marking up a shot
+  before it is written is the whole point of the fork, and there are two ways in:
+  - **Region capture** opens straight into annotation mode, so you draw on the
+    region-capture surface itself. (Turn it off with the advanced setting
+    *Disable annotation support in region capture*.)
+  - The **"Annotate image" after-capture task** opens the editor on the captured
+    image, which is how you annotate fullscreen, monitor and window captures.
+    Enable it under *After capture tasks*.
+
+  Either way the editor runs before the file is saved, and Save/Save as/Copy from
+  inside the editor feed the same after-capture pipeline.
 - **Save** — to the screenshots folder using ShareX's name patterns, save-as
   dialog, thumbnails, copy image/file/path to clipboard, print, open in explorer,
   and run external "Actions" on the saved file.
