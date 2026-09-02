@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -83,8 +83,6 @@ internal sealed class HotkeySettingsAvaloniaService : IHotkeySettingsService
             {
                 TaskSettings = source.TaskSettings.Copy()
             };
-            newSettings.TaskSettings.WatchFolderEnabled = false;
-            newSettings.TaskSettings.WatchFolderList = [];
             _manager.Hotkeys.Add(newSettings);
             return newSettings;
         });

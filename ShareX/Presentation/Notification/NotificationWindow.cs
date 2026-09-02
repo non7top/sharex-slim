@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -559,30 +559,11 @@ public partial class NotificationWindow : Window
                         ClipboardHelpers.CopyText(config.FilePath);
                     }
                     break;
-                case ToastClickAction.CopyUrl:
-                    ClipboardHelpers.CopyText(!string.IsNullOrEmpty(config.URL) ? config.URL : config.FilePath);
-                    break;
                 case ToastClickAction.OpenFile:
                     FileHelpers.OpenFile(config.FilePath);
                     break;
                 case ToastClickAction.OpenFolder:
                     FileHelpers.OpenFolderWithFile(config.FilePath);
-                    break;
-                case ToastClickAction.OpenUrl:
-                    if (!string.IsNullOrEmpty(config.URL))
-                    {
-                        URLHelpers.OpenURL(config.URL);
-                    }
-                    else
-                    {
-                        FileHelpers.OpenFile(config.FilePath);
-                    }
-                    break;
-                case ToastClickAction.Upload:
-                    UploadManager.UploadFile(config.FilePath);
-                    break;
-                case ToastClickAction.PinToScreen:
-                    TaskHelpers.PinToScreen(config.FilePath);
                     break;
                 case ToastClickAction.DeleteFile:
                     if (FormsMessageBox.Show(AppResources.MainForm_tsmiDeleteSelectedFile_Click_Do_you_really_want_to_delete_this_file_,
@@ -609,14 +590,12 @@ public partial class NotificationWindow : Window
     {
         bool hasFile = !string.IsNullOrWhiteSpace(config.FilePath);
         bool hasImageFile = hasFile && FileHelpers.IsImageFile(config.FilePath);
-        bool hasTarget = hasFile || !string.IsNullOrWhiteSpace(config.URL);
 
         return action switch
         {
-            ToastClickAction.AnnotateImage or ToastClickAction.CopyImageToClipboard or ToastClickAction.PinToScreen => hasImageFile,
+            ToastClickAction.AnnotateImage or ToastClickAction.CopyImageToClipboard => hasImageFile,
             ToastClickAction.CopyFile or ToastClickAction.CopyFilePath or ToastClickAction.OpenFile or
-                ToastClickAction.OpenFolder or ToastClickAction.Upload or ToastClickAction.DeleteFile => hasFile,
-            ToastClickAction.CopyUrl or ToastClickAction.OpenUrl => hasTarget,
+                ToastClickAction.OpenFolder or ToastClickAction.DeleteFile => hasFile,
             ToastClickAction.CloseNotification => true,
             _ => false
         };
@@ -628,12 +607,8 @@ public partial class NotificationWindow : Window
         ToastClickAction.CopyImageToClipboard => ("Copy image", LucideIcons.copy),
         ToastClickAction.CopyFile => ("Copy file", LucideIcons.files),
         ToastClickAction.CopyFilePath => ("Copy path", LucideIcons.clipboard),
-        ToastClickAction.CopyUrl => ("Copy link", LucideIcons.link),
         ToastClickAction.OpenFile => ("Open", LucideIcons.external_link),
         ToastClickAction.OpenFolder => ("Folder", LucideIcons.folder_open),
-        ToastClickAction.OpenUrl => ("Open link", LucideIcons.external_link),
-        ToastClickAction.Upload => ("Upload", LucideIcons.upload),
-        ToastClickAction.PinToScreen => ("Pin", LucideIcons.pin),
         ToastClickAction.DeleteFile => ("Delete", LucideIcons.trash_2),
         _ => ("Close", LucideIcons.x)
     };

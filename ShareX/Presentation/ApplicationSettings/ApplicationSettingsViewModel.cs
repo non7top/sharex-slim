@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -19,7 +19,6 @@ using ShareX.AvaloniaUI.Controls;
 using ShareX.AvaloniaUI.Theming;
 using ShareX.HelpersLib;
 using ShareX.Properties;
-using ShareX.UploadersLib;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -36,10 +35,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
 {
     private readonly DispatcherTimer _saveTimer;
     private SettingsNavigationItem? _selectedNavigationItem;
-    private ClipboardFormatItem? _selectedClipboardFormat;
-    private UploaderOption<ImageDestination>? _selectedImageUploader;
-    private UploaderOption<TextDestination>? _selectedTextUploader;
-    private UploaderOption<FileDestination>? _selectedFileUploader;
     private string _personalFolderPath = string.Empty;
     private string _personalFolderPreview = string.Empty;
     private string _screenshotsFolderPreview = string.Empty;
@@ -49,11 +44,7 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
     private bool _shellContextMenu;
     private bool _editWithShareX;
     private bool _sendToMenu;
-    private bool _chromeExtensionSupport;
-    private bool _firefoxAddonSupport;
-    private bool _steamShowInApp;
     private bool _exportSettings = true;
-    private bool _exportHistory = true;
     private bool _personalPathDirty;
     private bool _isBusy;
     private bool _restartRequired;
@@ -63,20 +54,13 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
     private ApplicationConfig Settings => Program.Settings;
 
     public ObservableCollection<SettingsNavigationItem> NavigationItems { get; private set; } = [];
-    public ObservableCollection<ClipboardFormatItem> ClipboardFormats { get; private set; } = [];
-    public ObservableCollection<UploaderOption<ImageDestination>> SecondaryImageUploaders { get; private set; } = [];
-    public ObservableCollection<UploaderOption<TextDestination>> SecondaryTextUploaders { get; private set; } = [];
-    public ObservableCollection<UploaderOption<FileDestination>> SecondaryFileUploaders { get; private set; } = [];
     public ObservableCollection<AdvancedSettingItem> AdvancedSettings { get; private set; } = [];
     public ObservableCollection<AdvancedSettingCategory> AdvancedSettingCategories { get; private set; } = [];
 
     public IReadOnlyList<EnumOption<SupportedLanguage>> LanguageOptions { get; } = CreateEnumOptions<SupportedLanguage>();
     public IReadOnlyList<EnumOption<HotkeyType>> HotkeyTypeOptions { get; } = CreateEnumOptions<HotkeyType>();
-    public IReadOnlyList<EnumOption<UpdateChannel>> UpdateChannelOptions { get; } = CreateEnumOptions<UpdateChannel>();
     public IReadOnlyList<EnumOption<ThumbnailTitleLocation>> ThumbnailTitleLocationOptions { get; } = CreateEnumOptions<ThumbnailTitleLocation>();
     public IReadOnlyList<EnumOption<ThumbnailViewClickAction>> ThumbnailClickActionOptions { get; } = CreateEnumOptions<ThumbnailViewClickAction>();
-    public IReadOnlyList<EnumOption<ProxyMethod>> ProxyMethodOptions { get; } = CreateEnumOptions<ProxyMethod>();
-    public IReadOnlyList<EnumOption<int>> BufferSizeOptions { get; private set; } = [];
 
     public SettingsNavigationItem? SelectedNavigationItem
     {
@@ -102,24 +86,9 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
     public bool IsPathsPage => IsPage("paths");
     public bool IsSettingsPage => IsPage("settings");
     public bool IsMainWindowPage => IsPage("main-window");
-    public bool IsClipboardFormatsPage => IsPage("clipboard-formats");
-    public bool IsUploadPage => IsPage("upload");
     public bool IsHistoryPage => IsPage("history");
     public bool IsPrintPage => IsPage("print");
-    public bool IsProxyPage => IsPage("proxy");
     public bool IsAdvancedPage => IsPage("advanced");
-
-    public bool UpdatesVisible
-    {
-        get
-        {
-#if STEAM || MicrosoftStore
-            return false;
-#else
-            return !SystemOptions.DisableUpdateCheck;
-#endif
-        }
-    }
 
     public bool WindowsIntegrationVisible
     {
@@ -129,18 +98,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
             return false;
 #else
             return true;
-#endif
-        }
-    }
-
-    public bool SteamIntegrationVisible
-    {
-        get
-        {
-#if STEAM
-            return true;
-#else
-            return false;
 #endif
         }
     }
@@ -180,20 +137,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
 
     public bool SilentRunEnabled => ShowTray;
     public bool SilentRun { get => Settings.SilentRun; set => SetSetting(Settings.SilentRun, value, x => Settings.SilentRun = x); }
-    public bool TrayIconProgressEnabled { get => Settings.TrayIconProgressEnabled; set => SetSetting(Settings.TrayIconProgressEnabled, value, x => Settings.TrayIconProgressEnabled = x); }
-
-    public bool TaskbarProgressEnabled
-    {
-        get => Settings.TaskbarProgressEnabled;
-        set
-        {
-            if (SetSetting(Settings.TaskbarProgressEnabled, value, x => Settings.TaskbarProgressEnabled = x))
-            {
-                TaskbarManager.Enabled = value;
-            }
-        }
-    }
-
     public bool TaskbarProgressSupported => TaskbarManager.IsPlatformSupported;
 
     public bool UseWhiteShareXIcon
@@ -229,25 +172,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         set { if (value != null) SetSetting(Settings.TrayMiddleClickAction, value.Value, x => Settings.TrayMiddleClickAction = x); }
     }
 
-    public bool AutoCheckUpdate
-    {
-        get => Settings.AutoCheckUpdate;
-        set
-        {
-            if (SetSetting(Settings.AutoCheckUpdate, value, x => Settings.AutoCheckUpdate = x))
-            {
-                OnPropertyChanged(nameof(UpdateChannelEnabled));
-            }
-        }
-    }
-
-    public bool UpdateChannelEnabled => AutoCheckUpdate;
-
-    public EnumOption<UpdateChannel>? SelectedUpdateChannel
-    {
-        get => Find(UpdateChannelOptions, Settings.UpdateChannel);
-        set { if (value != null) SetSetting(Settings.UpdateChannel, value.Value, x => Settings.UpdateChannel = x); }
-    }
 
     public bool StartWithWindows
     {
@@ -308,42 +232,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
             if (SetField(ref _sendToMenu, value))
             {
                 InvokeOnMainThread(() => IntegrationHelpers.CreateSendToMenuButton(value));
-            }
-        }
-    }
-
-    public bool ChromeExtensionSupport
-    {
-        get => _chromeExtensionSupport;
-        set
-        {
-            if (SetField(ref _chromeExtensionSupport, value))
-            {
-                InvokeOnMainThread(() => IntegrationHelpers.CreateChromeExtensionSupport(value));
-            }
-        }
-    }
-
-    public bool FirefoxAddonSupport
-    {
-        get => _firefoxAddonSupport;
-        set
-        {
-            if (SetField(ref _firefoxAddonSupport, value))
-            {
-                InvokeOnMainThread(() => IntegrationHelpers.CreateFirefoxAddonSupport(value));
-            }
-        }
-    }
-
-    public bool SteamShowInApp
-    {
-        get => _steamShowInApp;
-        set
-        {
-            if (SetField(ref _steamShowInApp, value))
-            {
-                InvokeOnMainThread(() => IntegrationHelpers.SteamShowInApp(value));
             }
         }
     }
@@ -413,8 +301,7 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
     public string ScreenshotsFolderPreview { get => _screenshotsFolderPreview; private set => SetField(ref _screenshotsFolderPreview, value); }
 
     public bool ExportSettings { get => _exportSettings; set { if (SetField(ref _exportSettings, value)) OnPropertyChanged(nameof(CanExport)); } }
-    public bool ExportHistory { get => _exportHistory; set { if (SetField(ref _exportHistory, value)) OnPropertyChanged(nameof(CanExport)); } }
-    public bool CanExport => !IsBusy && (ExportSettings || ExportHistory);
+    public bool CanExport => !IsBusy && ExportSettings;
 
     public bool AutoCleanupBackupFiles { get => Settings.AutoCleanupBackupFiles; set => SetSetting(Settings.AutoCleanupBackupFiles, value, x => Settings.AutoCleanupBackupFiles = x); }
     public bool AutoCleanupLogFiles { get => Settings.AutoCleanupLogFiles; set => SetSetting(Settings.AutoCleanupLogFiles, value, x => Settings.AutoCleanupLogFiles = x); }
@@ -446,40 +333,13 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         set { if (value != null) SetSetting(Settings.ThumbnailClickAction, value.Value, x => Settings.ThumbnailClickAction = x); }
     }
 
-    public ClipboardFormatItem? SelectedClipboardFormat
-    {
-        get => _selectedClipboardFormat;
-        set
-        {
-            if (SetField(ref _selectedClipboardFormat, value))
-            {
-                OnPropertyChanged(nameof(HasSelectedClipboardFormat));
-            }
-        }
-    }
 
-    public bool HasSelectedClipboardFormat => SelectedClipboardFormat != null;
+    public decimal ConcurrentTaskLimit { get => Settings.ConcurrentTaskLimit; set => SetSetting(Settings.ConcurrentTaskLimit, decimal.ToInt32(value), x => Settings.ConcurrentTaskLimit = x); }
 
-    public decimal UploadLimit { get => Settings.UploadLimit; set => SetSetting(Settings.UploadLimit, decimal.ToInt32(value), x => Settings.UploadLimit = x); }
 
-    public EnumOption<int>? SelectedBufferSize
-    {
-        get => Find(BufferSizeOptions, Settings.BufferSizePower);
-        set { if (value != null) SetSetting(Settings.BufferSizePower, value.Value, x => Settings.BufferSizePower = x); }
-    }
 
-    public decimal MaxUploadFailRetry { get => Settings.MaxUploadFailRetry; set => SetSetting(Settings.MaxUploadFailRetry, decimal.ToInt32(value), x => Settings.MaxUploadFailRetry = x); }
-    public bool UseSecondaryUploaders { get => Settings.UseSecondaryUploaders; set => SetSetting(Settings.UseSecondaryUploaders, value, x => Settings.UseSecondaryUploaders = x); }
-
-    public UploaderOption<ImageDestination>? SelectedImageUploader { get => _selectedImageUploader; set => SetField(ref _selectedImageUploader, value); }
-    public UploaderOption<TextDestination>? SelectedTextUploader { get => _selectedTextUploader; set => SetField(ref _selectedTextUploader, value); }
-    public UploaderOption<FileDestination>? SelectedFileUploader { get => _selectedFileUploader; set => SetField(ref _selectedFileUploader, value); }
-
-    public bool HistorySaveTasks { get => Settings.HistorySaveTasks; set => SetSetting(Settings.HistorySaveTasks, value, x => Settings.HistorySaveTasks = x); }
-    public bool HistoryCheckURL { get => Settings.HistoryCheckURL; set => SetSetting(Settings.HistoryCheckURL, value, x => Settings.HistoryCheckURL = x); }
     public bool RecentTasksSave { get => Settings.RecentTasksSave; set => SetSetting(Settings.RecentTasksSave, value, x => Settings.RecentTasksSave = x); }
     public decimal RecentTasksMaxCount { get => Settings.RecentTasksMaxCount; set => SetSetting(Settings.RecentTasksMaxCount, decimal.ToInt32(value), x => Settings.RecentTasksMaxCount = x); }
-    public bool RecentTasksShowInMainWindow { get => Settings.RecentTasksShowInMainWindow; set => SetSetting(Settings.RecentTasksShowInMainWindow, value, x => Settings.RecentTasksShowInMainWindow = x); }
     public bool RecentTasksShowInTrayMenu { get => Settings.RecentTasksShowInTrayMenu; set => SetSetting(Settings.RecentTasksShowInTrayMenu, value, x => Settings.RecentTasksShowInTrayMenu = x); }
     public bool RecentTasksTrayMenuMostRecentFirst { get => Settings.RecentTasksTrayMenuMostRecentFirst; set => SetSetting(Settings.RecentTasksTrayMenuMostRecentFirst, value, x => Settings.RecentTasksTrayMenuMostRecentFirst = x); }
 
@@ -500,34 +360,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
     public bool DefaultPrinterOverrideVisible => !Settings.PrintSettings.ShowPrintDialog;
     public string DefaultPrinterOverride { get => Settings.PrintSettings.DefaultPrinterOverride; set => SetSetting(Settings.PrintSettings.DefaultPrinterOverride, value, x => Settings.PrintSettings.DefaultPrinterOverride = x); }
 
-    public EnumOption<ProxyMethod>? SelectedProxyMethod
-    {
-        get => Find(ProxyMethodOptions, Settings.ProxySettings.ProxyMethod);
-        set
-        {
-            if (value == null || !SetSetting(Settings.ProxySettings.ProxyMethod, value.Value, x => Settings.ProxySettings.ProxyMethod = x))
-            {
-                return;
-            }
-
-            if (value.Value == ProxyMethod.Automatic)
-            {
-                Settings.ProxySettings.IsValidProxy();
-                OnPropertyChanged(nameof(ProxyHost));
-                OnPropertyChanged(nameof(ProxyPort));
-            }
-
-            OnPropertyChanged(nameof(ProxyCredentialsEnabled));
-            OnPropertyChanged(nameof(ManualProxyEnabled));
-        }
-    }
-
-    public bool ProxyCredentialsEnabled => Settings.ProxySettings.ProxyMethod != ProxyMethod.None;
-    public bool ManualProxyEnabled => Settings.ProxySettings.ProxyMethod == ProxyMethod.Manual;
-    public string ProxyUsername { get => Settings.ProxySettings.Username ?? string.Empty; set => SetSetting(Settings.ProxySettings.Username, value, x => Settings.ProxySettings.Username = x); }
-    public string ProxyPassword { get => Settings.ProxySettings.Password ?? string.Empty; set => SetSetting(Settings.ProxySettings.Password, value, x => Settings.ProxySettings.Password = x); }
-    public string ProxyHost { get => Settings.ProxySettings.Host ?? string.Empty; set => SetSetting(Settings.ProxySettings.Host, value, x => Settings.ProxySettings.Host = x); }
-    public decimal ProxyPort { get => Settings.ProxySettings.Port; set => SetSetting(Settings.ProxySettings.Port, decimal.ToInt32(value), x => Settings.ProxySettings.Port = x); }
 
     public bool IsBusy
     {
@@ -553,30 +385,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         Reload();
     }
 
-    public void AddClipboardFormat(string description, string value)
-    {
-        ClipboardFormat format = new(description, value);
-        Settings.ClipboardContentFormats.Add(format);
-        ClipboardFormatItem item = new(format, MarkChanged);
-        ClipboardFormats.Add(item);
-        SelectedClipboardFormat = item;
-        MarkChanged();
-    }
-
-    public void RemoveSelectedClipboardFormat()
-    {
-        if (SelectedClipboardFormat == null)
-        {
-            return;
-        }
-
-        int index = ClipboardFormats.IndexOf(SelectedClipboardFormat);
-        Settings.ClipboardContentFormats.Remove(SelectedClipboardFormat.Model);
-        ClipboardFormats.Remove(SelectedClipboardFormat);
-        SelectedClipboardFormat = ClipboardFormats.Count == 0 ? null : ClipboardFormats[Math.Min(index, ClipboardFormats.Count - 1)];
-        MarkChanged();
-    }
-
     public void ResetThumbnailSize()
     {
         Settings.ThumbnailSize = new Size(200, 150);
@@ -585,27 +393,9 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         MarkChanged();
     }
 
-    public void MoveSelectedImageUploader(int offset) => MoveUploader(SecondaryImageUploaders, SelectedImageUploader, offset, list => Settings.SecondaryImageUploaders = list);
-    public void MoveSelectedTextUploader(int offset) => MoveUploader(SecondaryTextUploaders, SelectedTextUploader, offset, list => Settings.SecondaryTextUploaders = list);
-    public void MoveSelectedFileUploader(int offset) => MoveUploader(SecondaryFileUploaders, SelectedFileUploader, offset, list => Settings.SecondaryFileUploaders = list);
 
     public void EditQuickTaskMenu() => QuickTaskMenuEditorIntegration.Show();
 
-    public async Task CheckDevBuildAsync()
-    {
-        IsBusy = true;
-        try
-        {
-            await TaskHelpers.DownloadDevBuild();
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    public void OpenChromeExtensionPage() => URLHelpers.OpenURL("https://chrome.google.com/webstore/detail/sharex/nlkoigbdolhchiicbonbihbphgamnaoc");
-    public void OpenFirefoxAddonPage() => URLHelpers.OpenURL("https://addons.mozilla.org/en-US/firefox/addon/sharex/");
     public void OpenPersonalFolder() => FileHelpers.OpenFolder(PersonalFolderPreview);
     public void OpenScreenshotsFolder() => FileHelpers.OpenFolder(ScreenshotsFolderPreview);
 
@@ -627,11 +417,11 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         try
         {
             bool exportSettings = ExportSettings;
-            bool exportHistory = ExportHistory;
+
             bool result = await Task.Run(() =>
             {
                 SettingManager.SaveAllSettings();
-                return SettingManager.Export(path, exportSettings, exportHistory);
+                return SettingManager.Export(path, exportSettings);
             });
             StatusMessage = result ? $"Backup exported to {path}" : "Backup export failed.";
         }
@@ -737,14 +527,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         RefreshIntegrations();
         RefreshStartWithWindows();
 
-        ClipboardFormats = new ObservableCollection<ClipboardFormatItem>(Settings.ClipboardContentFormats
-            .Select(x => new ClipboardFormatItem(x, MarkChanged)));
-        SelectedClipboardFormat = ClipboardFormats.FirstOrDefault();
-
-        SecondaryImageUploaders = CreateUploaderOptions(Settings.SecondaryImageUploaders);
-        SecondaryTextUploaders = CreateUploaderOptions(Settings.SecondaryTextUploaders);
-        SecondaryFileUploaders = CreateUploaderOptions(Settings.SecondaryFileUploaders);
-        SyncUploaderSettings();
 
         AdvancedSettings = new ObservableCollection<AdvancedSettingItem>(
             TypeDescriptor.GetProperties(Settings).Cast<PropertyDescriptor>()
@@ -757,7 +539,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
             .GroupBy(x => x.Category)
             .Select(group => new AdvancedSettingCategory(group.Key, new ObservableCollection<AdvancedSettingItem>(group))));
 
-        RefreshBufferSizeOptions();
 
         NavigationItems = CreateNavigationItems();
         SelectedNavigationItem = NavigationItems.FirstOrDefault();
@@ -774,11 +555,8 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
             Nav("paths", "Paths", LucideIcons.folder),
             Nav("settings", "Settings", LucideIcons.database_backup),
             Nav("main-window", "Main window", LucideIcons.monitor),
-            Nav("clipboard-formats", "Clipboard formats", LucideIcons.clipboard_list),
-            Nav("upload", "Upload", LucideIcons.upload),
-            Nav("history", "History", LucideIcons.history),
+            Nav("history", "Recent tasks", LucideIcons.history),
             Nav("print", "Print", LucideIcons.printer),
-            Nav("proxy", "Proxy", LucideIcons.network),
             Nav("advanced", "Advanced", LucideIcons.sliders_horizontal)
         ];
     }
@@ -791,11 +569,8 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         _shellContextMenu = IntegrationHelpers.CheckShellContextMenuButton();
         _editWithShareX = IntegrationHelpers.CheckEditShellContextMenuButton();
         _sendToMenu = IntegrationHelpers.CheckSendToMenuButton();
-        _chromeExtensionSupport = IntegrationHelpers.CheckChromeExtensionSupport();
-        _firefoxAddonSupport = IntegrationHelpers.CheckFirefoxAddonSupport();
 #endif
 #if STEAM
-        _steamShowInApp = IntegrationHelpers.CheckSteamShowInApp();
 #endif
     }
 
@@ -868,41 +643,6 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         }
     }
 
-    private void SyncUploaderSettings()
-    {
-        Settings.SecondaryImageUploaders = SecondaryImageUploaders.Select(x => x.Value).ToList();
-        Settings.SecondaryTextUploaders = SecondaryTextUploaders.Select(x => x.Value).ToList();
-        Settings.SecondaryFileUploaders = SecondaryFileUploaders.Select(x => x.Value).ToList();
-    }
-
-    private void MoveUploader<T>(ObservableCollection<UploaderOption<T>> items, UploaderOption<T>? selected, int offset, Action<List<T>> update)
-        where T : struct, Enum
-    {
-        if (selected == null || items.Count < 2)
-        {
-            return;
-        }
-
-        int oldIndex = items.IndexOf(selected);
-        int newIndex = Math.Clamp(oldIndex + offset, 0, items.Count - 1);
-        if (oldIndex == newIndex)
-        {
-            return;
-        }
-
-        items.Move(oldIndex, newIndex);
-        update(items.Select(x => x.Value).ToList());
-        MarkChanged();
-    }
-
-    private static ObservableCollection<UploaderOption<T>> CreateUploaderOptions<T>(List<T> configured) where T : struct, Enum
-    {
-        IReadOnlyList<T> values = Helpers.GetEnums<T>();
-        List<T> normalized = configured.Where(values.Contains).Distinct().ToList();
-        normalized.AddRange(values.Where(x => !normalized.Contains(x)));
-        return new ObservableCollection<UploaderOption<T>>(normalized.Select(x => new UploaderOption<T>(x, x.GetLocalizedDescription())));
-    }
-
     private bool IsPage(string id) => SelectedNavigationItem?.Id == id;
 
     private void OnPageChanged()
@@ -912,11 +652,8 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         OnPropertyChanged(nameof(IsPathsPage));
         OnPropertyChanged(nameof(IsSettingsPage));
         OnPropertyChanged(nameof(IsMainWindowPage));
-        OnPropertyChanged(nameof(IsClipboardFormatsPage));
-        OnPropertyChanged(nameof(IsUploadPage));
         OnPropertyChanged(nameof(IsHistoryPage));
         OnPropertyChanged(nameof(IsPrintPage));
-        OnPropertyChanged(nameof(IsProxyPage));
         OnPropertyChanged(nameof(IsAdvancedPage));
     }
 
@@ -941,17 +678,7 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
 
     private void OnAdvancedSettingChanged()
     {
-        RefreshBufferSizeOptions();
         MarkChanged();
-    }
-
-    private void RefreshBufferSizeOptions()
-    {
-        BufferSizeOptions = Enumerable.Range(0, 14)
-            .Select(power => new EnumOption<int>(power, ((long)(Math.Pow(2, power) * 1024)).ToSizeString(Settings.BinaryUnits, 0)))
-            .ToArray();
-        OnPropertyChanged(nameof(BufferSizeOptions));
-        OnPropertyChanged(nameof(SelectedBufferSize));
     }
 
     private void OnSaveTimerTick(object? sender, EventArgs e)

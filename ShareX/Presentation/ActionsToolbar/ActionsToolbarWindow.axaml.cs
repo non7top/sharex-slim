@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program developed by ShareX Team
@@ -349,8 +349,7 @@ public partial class ActionsToolbarWindow : Window
             dataObject.SetText(text);
         }
 
-        UploadManager.DragDropUpload(dataObject);
-        e.DragEffects = DragDropEffects.Copy;
+        e.DragEffects = DragDropEffects.None;
         e.Handled = true;
     }
 

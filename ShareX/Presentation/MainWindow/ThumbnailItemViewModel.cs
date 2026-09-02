@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -159,8 +159,8 @@ internal sealed class ThumbnailItemViewModel : INotifyPropertyChanged, IDisposab
         Title = !string.IsNullOrEmpty(info?.FileName) ? info.FileName : Path.GetFileName(info?.FilePath) ?? "Untitled task";
         Status = !string.IsNullOrEmpty(info?.Status) ? info.Status : Task.Status.ToString();
         Details = info?.ToString() ?? string.Empty;
-        Progress = info?.Progress?.Percentage ?? 0;
-        IsProgressVisible = Task.IsWorking && info?.Progress != null;
+        Progress = 0;
+        IsProgressVisible = false;
         IsFailed = Task.Status == TaskStatus.Failed;
         PlaceholderIcon = GetPlaceholderIcon(info?.FilePath ?? info?.FileName);
     }

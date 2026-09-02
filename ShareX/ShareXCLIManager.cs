@@ -55,22 +55,16 @@ namespace ShareX
 
                     if (command.IsCommand)
                     {
-                        if (CheckCustomUploader(command) || CheckImageEffect(command) || await CheckCLIHotkey(command) || await CheckCLIWorkflow(command) ||
-                            await CheckNativeMessagingInput(command))
+                        if (CheckImageEffect(command) || await CheckCLIHotkey(command) || await CheckCLIWorkflow(command) ||
+                            CheckImageEditor(command))
                         {
                         }
 
                         continue;
                     }
 
-                    if (URLHelpers.IsValidURL(command.Command))
-                    {
-                        UploadManager.DownloadAndUploadFile(command.Command, taskSettings);
-                    }
-                    else
-                    {
-                        UploadManager.UploadFile(command.Command, taskSettings);
-                    }
+                    // A bare path opens the annotation editor on that image.
+                    TaskHelpers.AnnotateImageFromFile(command.Command, taskSettings);
                 }
             }
         }
@@ -96,13 +90,15 @@ namespace ShareX
             return null;
         }
 
-        private bool CheckCustomUploader(CLICommand command)
+        private bool CheckImageEditor(CLICommand command)
         {
-            if (command.Command.Equals("CustomUploader", StringComparison.OrdinalIgnoreCase))
+            if (command.Command.Equals("ImageEditor", StringComparison.OrdinalIgnoreCase))
             {
-                if (!string.IsNullOrEmpty(command.Parameter) && command.Parameter.EndsWith(".sxcu", StringComparison.OrdinalIgnoreCase))
+                string filePath = CheckParameterForFilePath(command);
+
+                if (!string.IsNullOrEmpty(filePath))
                 {
-                    TaskHelpers.ImportCustomUploader(command.Parameter);
+                    TaskHelpers.AnnotateImageFromFile(filePath);
                 }
 
                 return true;
@@ -192,19 +188,5 @@ namespace ShareX
             return false;
         }
 
-        private async Task<bool> CheckNativeMessagingInput(CLICommand command)
-        {
-            if (command.Command.Equals("NativeMessagingInput", StringComparison.OrdinalIgnoreCase))
-            {
-                if (!string.IsNullOrEmpty(command.Parameter) && command.Parameter.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                {
-                    await TaskHelpers.HandleNativeMessagingInput(command.Parameter);
-                }
-
-                return true;
-            }
-
-            return false;
-        }
     }
 }

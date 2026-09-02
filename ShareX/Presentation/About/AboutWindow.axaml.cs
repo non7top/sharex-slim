@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -26,9 +26,6 @@ namespace ShareX;
 
 public partial class AboutWindow : Window
 {
-    private UpdateChecker? _updateChecker;
-    private bool _updateChecked;
-
     public AboutWindow()
     {
         InitializeComponent();
@@ -38,52 +35,12 @@ public partial class AboutWindow : Window
         CopyrightText.Text = "Copyright (c) 2007-2026 ShareX Team";
         SectionsControl.ItemsSource = CreateSections();
 
-#if STEAM
-        BuildText.Text = "Steam build";
-        BuildText.IsVisible = true;
-#elif MicrosoftStore
-        BuildText.Text = "Microsoft Store build";
-        BuildText.IsVisible = true;
-#else
-        if (!SystemOptions.DisableUpdateCheck)
-        {
-            UpdatePanel.IsVisible = true;
-            UpdateStatusText.Text = "Checking for updates...";
-        }
-#endif
-
         Opened += OnOpened;
     }
 
-    private async void OnOpened(object? sender, EventArgs e)
+    private void OnOpened(object? sender, EventArgs e)
     {
         Activate();
-
-        if (!UpdatePanel.IsVisible || _updateChecked)
-        {
-            return;
-        }
-
-        _updateChecked = true;
-        _updateChecker = Program.UpdateManager.CreateUpdateChecker();
-        await _updateChecker.CheckUpdateAsync();
-
-        UpdateProgress.IsVisible = false;
-
-        switch (_updateChecker.Status)
-        {
-            case UpdateStatus.UpdateCheckFailed:
-                UpdateStatusText.Text = "Update check failed.";
-                break;
-            case UpdateStatus.UpdateAvailable:
-                UpdateStatusText.IsVisible = false;
-                UpdateAvailableButton.Content = "A newer version of ShareX is available";
-                UpdateAvailableButton.IsVisible = true;
-                break;
-            case UpdateStatus.UpToDate:
-                UpdateStatusText.Text = "ShareX is up to date.";
-                break;
-        }
     }
 
     private void OnLogoPressed(object? sender, PointerPressedEventArgs e)
@@ -99,16 +56,6 @@ public partial class AboutWindow : Window
     {
         LogoAnimation.TogglePaused();
         e.Handled = true;
-    }
-
-    private async void OnUpdateAvailableClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (_updateChecker == null)
-        {
-            return;
-        }
-
-        await UpdateMessageBox.StartAsync(_updateChecker);
     }
 
     private static IReadOnlyList<AboutSection> CreateSections()

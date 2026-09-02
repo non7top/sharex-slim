@@ -32,29 +32,7 @@ namespace ShareX
     {
         public string FilePath { get; set; }
 
-        public string FileName
-        {
-            get
-            {
-                string text = "";
-
-                if (!string.IsNullOrEmpty(FilePath))
-                {
-                    text = FilePath;
-                }
-                else if (!string.IsNullOrEmpty(URL))
-                {
-                    text = URL;
-                }
-
-                return FileHelpers.GetFileNameSafe(text);
-            }
-        }
-
-        public string URL { get; set; }
-        public string ThumbnailURL { get; set; }
-        public string DeletionURL { get; set; }
-        public string ShortenedURL { get; set; }
+        public string FileName => FileHelpers.GetFileNameSafe(FilePath ?? "");
 
         public DateTime Time { get; set; }
 
@@ -75,15 +53,7 @@ namespace ShareX
 
         public void Open()
         {
-            if (!string.IsNullOrEmpty(ShortenedURL))
-            {
-                URLHelpers.OpenURL(ShortenedURL);
-            }
-            else if (!string.IsNullOrEmpty(URL))
-            {
-                URLHelpers.OpenURL(URL);
-            }
-            else if (!string.IsNullOrEmpty(FilePath))
+            if (!string.IsNullOrEmpty(FilePath))
             {
                 FileHelpers.OpenFile(FilePath);
             }
@@ -97,22 +67,7 @@ namespace ShareX
 
         public override string ToString()
         {
-            string text = "";
-
-            if (!string.IsNullOrEmpty(ShortenedURL))
-            {
-                text = ShortenedURL;
-            }
-            else if (!string.IsNullOrEmpty(URL))
-            {
-                text = URL;
-            }
-            else if (!string.IsNullOrEmpty(FilePath))
-            {
-                text = FilePath;
-            }
-
-            return text;
+            return FilePath ?? "";
         }
     }
 }

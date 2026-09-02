@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program developed by ShareX Team
@@ -28,7 +28,6 @@ public partial class QuickTaskMenuEditorWindow : Window
 {
     private readonly ObservableCollection<QuickTaskPresetItem> _items = [];
     private ObservableCollection<QuickTaskFlagItem> _afterCaptureOptions = [];
-    private ObservableCollection<QuickTaskFlagItem> _afterUploadOptions = [];
     private QuickTaskPresetItem? _editedItem;
 
     private QuickTaskPresetItem? SelectedItem => TaskList.SelectedItem as QuickTaskPresetItem;
@@ -154,9 +153,7 @@ public partial class QuickTaskMenuEditorWindow : Window
         ItemEditorTitle.Text = item == null ? "Add quick task" : "Edit quick task";
         TaskNameBox.Text = task.Name ?? string.Empty;
         _afterCaptureOptions = CreateFlagOptions(task.AfterCaptureTasks);
-        _afterUploadOptions = CreateFlagOptions(task.AfterUploadTasks);
         AfterCaptureTaskOptions.ItemsSource = _afterCaptureOptions;
-        AfterUploadTaskOptions.ItemsSource = _afterUploadOptions;
         UpdateEditorPreview();
         ItemEditorOverlay.IsVisible = true;
 
@@ -186,8 +183,7 @@ public partial class QuickTaskMenuEditorWindow : Window
     private void UpdateEditorPreview()
     {
         AfterCaptureTasks afterCapture = ReadFlags<AfterCaptureTasks>(_afterCaptureOptions);
-        AfterUploadTasks afterUpload = ReadFlags<AfterUploadTasks>(_afterUploadOptions);
-        string generatedName = new QuickTaskInfo(afterCapture, afterUpload).ToString();
+        string generatedName = new QuickTaskInfo(afterCapture).ToString();
         TaskNameBox.PlaceholderText = string.IsNullOrEmpty(generatedName) ? "Separator" : generatedName;
     }
 
@@ -217,7 +213,6 @@ public partial class QuickTaskMenuEditorWindow : Window
 
         task.Name = TaskNameBox.Text ?? string.Empty;
         task.AfterCaptureTasks = ReadFlags<AfterCaptureTasks>(_afterCaptureOptions);
-        task.AfterUploadTasks = ReadFlags<AfterUploadTasks>(_afterUploadOptions);
         item.Refresh();
         TaskList.SelectedItem = item;
 
@@ -233,9 +228,7 @@ public partial class QuickTaskMenuEditorWindow : Window
         ItemEditorOverlay.IsVisible = false;
         _editedItem = null;
         _afterCaptureOptions = [];
-        _afterUploadOptions = [];
         AfterCaptureTaskOptions.ItemsSource = null;
-        AfterUploadTaskOptions.ItemsSource = null;
     }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
@@ -282,9 +275,7 @@ public sealed class QuickTaskPresetItem : INotifyPropertyChanged
                 return string.Empty;
             }
 
-            string capture = string.Join(", ", Model.AfterCaptureTasks.GetFlags().Select(value => value.GetLocalizedDescription()));
-            string upload = string.Join(", ", Model.AfterUploadTasks.GetFlags().Select(value => value.GetLocalizedDescription()));
-            return string.IsNullOrEmpty(upload) ? capture : $"{capture}  •  After upload: {upload}";
+            return string.Join(", ", Model.AfterCaptureTasks.GetFlags().Select(value => value.GetLocalizedDescription()));
         }
     }
 

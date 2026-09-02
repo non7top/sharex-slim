@@ -24,11 +24,9 @@
 #endregion License Information (GPL v3)
 
 using Avalonia.Win32.Interoperability;
+using ShareX.AvaloniaUI.Integration;
 using ShareX.HelpersLib;
-using ShareX.HistoryLib;
-using ShareX.ImageEditor.Integration;
 using ShareX.Properties;
-using ShareX.UploadersLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -121,21 +119,15 @@ namespace ShareX
         public static bool SilentRun { get; private set; }
         public static bool Sandbox { get; private set; }
         public static bool IsAdmin { get; private set; }
-        public static bool SteamFirstTimeConfig { get; private set; }
         public static bool IgnoreHotkeyWarning { get; private set; }
-        public static bool PuushMode { get; private set; }
 
         internal static ApplicationConfig Settings { get; set; }
         internal static TaskSettings DefaultTaskSettings { get; set; }
-        internal static UploadersConfig UploadersConfig { get; set; }
         internal static HotkeysConfig HotkeysConfig { get; set; }
-        internal static HistoryManagerSQLite HistoryManager { get; set; }
 
         internal static MainForm MainForm { get; private set; }
         internal static Stopwatch StartTimer { get; private set; }
         internal static HotkeyManager HotkeyManager { get; set; }
-        internal static WatchFolderManager WatchFolderManager { get; set; }
-        internal static ShareXUpdateManager UpdateManager { get; private set; }
         internal static ShareXCLIManager CLI { get; private set; }
 
         #region Paths
@@ -166,7 +158,6 @@ namespace ShareX
             AppName, PersonalPathConfigFileName);
 
         private static readonly string PortableCheckFilePath = FileHelpers.GetAbsolutePath("Portable");
-        public static readonly string SteamInAppFilePath = FileHelpers.GetAbsolutePath("Steam");
 
         private static string CustomPersonalPath { get; set; }
 
@@ -183,29 +174,7 @@ namespace ShareX
             }
         }
 
-        public const string HistoryFileName = "History.db";
 
-        public static string HistoryFilePath
-        {
-            get
-            {
-                if (Sandbox) return null;
-
-                return Path.Combine(PersonalFolder, HistoryFileName);
-            }
-        }
-
-        public const string HistoryFileNameOld = "History.json";
-
-        public static string HistoryFilePathOld
-        {
-            get
-            {
-                if (Sandbox) return null;
-
-                return Path.Combine(PersonalFolder, HistoryFileNameOld);
-            }
-        }
 
         public const string LogsFolderName = "Logs";
 
@@ -260,7 +229,6 @@ namespace ShareX
         }
 
         public static string ImageEffectsFolder => Path.Combine(PersonalFolder, "ImageEffects");
-        public static string ModelsFolder => Path.Combine(PersonalFolder, "Models");
 
         private static string PersonalPathDetectionMethod;
 
@@ -277,10 +245,6 @@ namespace ShareX
 
             CLI = new ShareXCLIManager(args);
             CLI.ParseCommands();
-
-#if STEAM
-            if (CheckUninstall()) return; // Steam will run ShareX with -Uninstall when uninstalling
-#endif
 
             SystemOptions.UpdateSystemOptions();
             UpdatePersonalPath();
@@ -342,25 +306,19 @@ namespace ShareX
             SilentRun = SilentRun || AppInstance.GetActivatedEventArgs()?.Kind == ActivationKind.StartupTask;
 #endif
 
-#if STEAM
-            SteamFirstTimeConfig = CLI.IsCommandExist("SteamConfig");
-#endif
-
             IgnoreHotkeyWarning = CLI.IsCommandExist("NoHotkeys");
 
             CreateParentFolders();
             RegisterExtensions();
-            CheckPuushMode();
             DebugWriteFlags();
 
             DebugHelper.WriteLine("Avalonia init started.");
             Application.AddMessageFilter(new WinFormsAvaloniaMessageFilter());
-            ImageEditorIntegration.Initialize();
+            AvaloniaBootstrapper.EnsureInitialized();
             DebugHelper.WriteLine("Avalonia init finished.");
 
             SettingManager.LoadInitialSettings();
 
-            UpdateManager = new ShareXUpdateManager();
             LanguageHelper.ChangeLanguage(Settings.Language);
             CleanupManager.CleanupAsync();
 
@@ -381,8 +339,6 @@ namespace ShareX
 
                 DebugHelper.WriteLine("ShareX closing.");
 
-                WatchFolderManager?.Dispose();
-                SettingManager.HistoryClose();
                 SettingManager.SaveAllSettings();
 
                 DebugHelper.WriteLine("ShareX closed.");
@@ -539,11 +495,6 @@ namespace ShareX
 #if !MicrosoftStore
             if (!Portable)
             {
-                if (!IntegrationHelpers.CheckCustomUploaderExtension())
-                {
-                    IntegrationHelpers.CreateCustomUploaderExtension(true);
-                }
-
                 if (!IntegrationHelpers.CheckImageEffectExtension())
                 {
                     IntegrationHelpers.CreateImageEffectExtension(true);
@@ -697,13 +648,6 @@ namespace ShareX
             return false;
         }
 
-        private static bool CheckPuushMode()
-        {
-            string puushPath = FileHelpers.GetAbsolutePath("puush");
-            PuushMode = File.Exists(puushPath);
-            return PuushMode;
-        }
-
         private static void DebugWriteFlags()
         {
             List<string> flags = new List<string>();
@@ -713,12 +657,8 @@ namespace ShareX
             if (Portable) flags.Add(nameof(Portable));
             if (SilentRun) flags.Add(nameof(SilentRun));
             if (Sandbox) flags.Add(nameof(Sandbox));
-            if (SteamFirstTimeConfig) flags.Add(nameof(SteamFirstTimeConfig));
             if (IgnoreHotkeyWarning) flags.Add(nameof(IgnoreHotkeyWarning));
-            if (SystemOptions.DisableUpdateCheck) flags.Add(nameof(SystemOptions.DisableUpdateCheck));
-            if (SystemOptions.DisableUpload) flags.Add(nameof(SystemOptions.DisableUpload));
             if (SystemOptions.DisableLogging) flags.Add(nameof(SystemOptions.DisableLogging));
-            if (PuushMode) flags.Add(nameof(PuushMode));
 
             string output = string.Join(", ", flags);
 

@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program developed by ShareX Team
@@ -98,21 +98,6 @@ public sealed class FirstTimeConfigViewModel : INotifyPropertyChanged
 
             TryApply(() => IntegrationHelpers.CreateSendToMenuButton(value));
             SetField(ref _sendToMenu, ReadOnMainThread(IntegrationHelpers.CheckSendToMenuButton));
-        }
-    }
-
-    public bool SteamShowInApp
-    {
-        get => _steamShowInApp;
-        set
-        {
-            if (_steamShowInApp == value)
-            {
-                return;
-            }
-
-            TryApply(() => IntegrationHelpers.SteamShowInApp(value));
-            SetField(ref _steamShowInApp, ReadOnMainThread(IntegrationHelpers.CheckSteamShowInApp));
         }
     }
 

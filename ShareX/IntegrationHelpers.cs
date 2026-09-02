@@ -373,37 +373,6 @@ namespace ShareX
             return ShortcutHelpers.SetShortcut(create, Environment.SpecialFolder.SendTo, "ShareX", Application.ExecutablePath);
         }
 
-        public static bool CheckSteamShowInApp()
-        {
-            return File.Exists(Program.SteamInAppFilePath);
-        }
-
-        public static void SteamShowInApp(bool showInApp)
-        {
-            string path = Program.SteamInAppFilePath;
-
-            try
-            {
-                if (showInApp)
-                {
-                    FileHelpers.CreateEmptyFile(path);
-                }
-                else if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-            }
-            catch (Exception e)
-            {
-                DebugHelper.WriteException(e);
-                e.ShowError();
-                return;
-            }
-
-            MessageBox.Show(Resources.ApplicationSettingsForm_cbSteamShowInApp_CheckedChanged_For_settings_to_take_effect_ShareX_needs_to_be_reopened_from_Steam_,
-                "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
         public static void Uninstall()
         {
             StartupManager.State = StartupState.Disabled;

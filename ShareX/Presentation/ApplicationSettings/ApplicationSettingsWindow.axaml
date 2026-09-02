@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -148,8 +148,6 @@
                                     </Grid>
                                     <CheckBox Classes="setting" Content="Show tray icon" IsChecked="{Binding ShowTray, Mode=TwoWay}"/>
                                     <CheckBox Classes="setting" Content="Minimize to tray on start" IsEnabled="{Binding SilentRunEnabled}" IsChecked="{Binding SilentRun, Mode=TwoWay}"/>
-                                    <CheckBox Classes="setting" Content="Show progress in tray icon" IsChecked="{Binding TrayIconProgressEnabled, Mode=TwoWay}"/>
-                                    <CheckBox Classes="setting" Content="Show progress in taskbar button" IsEnabled="{Binding TaskbarProgressSupported}" IsChecked="{Binding TaskbarProgressEnabled, Mode=TwoWay}"/>
                                     <CheckBox Classes="setting" Content="Use white ShareX icon" IsChecked="{Binding UseWhiteShareXIcon, Mode=TwoWay}"/>
                                     <CheckBox Classes="setting" Content="Remember main window position" IsChecked="{Binding RememberMainFormPosition, Mode=TwoWay}"/>
                                     <CheckBox Classes="setting" Content="Remember main window size" IsChecked="{Binding RememberMainFormSize, Mode=TwoWay}"/>
@@ -174,20 +172,19 @@
                                     <Button Classes="compact" HorizontalAlignment="Left" Content="Edit quick task menu..." Click="OnEditQuickTaskMenuClick"/>
                                 </StackPanel>
                             </Border>
+                            <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Classes="section-title" Text="Tasks"/>
+                                    <Grid ColumnDefinitions="220,*" ColumnSpacing="8">
+                                        <TextBlock Text="Simultaneous task limit:" VerticalAlignment="Center" FontWeight="Normal"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                                            <NumericUpDown Classes="form-control" Minimum="0" Maximum="25" Value="{Binding ConcurrentTaskLimit, Mode=TwoWay}"/>
+                                            <TextBlock Classes="hint" Text="0 disables the limit" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
 
-                            <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding UpdatesVisible}">
-                                <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="6">
-                                        <TextBlock Classes="section-title" Text="Updates"/>
-                                        <CheckBox Classes="setting" Content="Automatically check for updates" IsChecked="{Binding AutoCheckUpdate, Mode=TwoWay}"/>
-                                        <Grid ColumnDefinitions="190,*" ColumnSpacing="8">
-                                            <TextBlock Text="Update channel:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                            <ComboBox Grid.Column="1" Classes="form-control" IsEnabled="{Binding UpdateChannelEnabled}" ItemsSource="{Binding UpdateChannelOptions}" SelectedItem="{Binding SelectedUpdateChannel, Mode=TwoWay}"/>
-                                        </Grid>
-                                        <Button Classes="compact" HorizontalAlignment="Left" Content="Install dev build..." IsEnabled="{Binding !IsBusy}" Click="OnCheckDevBuildClick"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -207,32 +204,6 @@
                                     <CheckBox Classes="setting" IsVisible="{Binding WindowsIntegrationVisible}" Content="Show ShareX in &quot;Send to&quot; menu" IsChecked="{Binding SendToMenu, Mode=TwoWay}"/>
                                 </StackPanel>
                             </Border>
-                            <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding WindowsIntegrationVisible}">
-                                <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="section-title" Text="Chrome extension"/>
-                                        <CheckBox Classes="setting" Content="Enable Chrome extension support" IsChecked="{Binding ChromeExtensionSupport, Mode=TwoWay}"/>
-                                        <Button Classes="compact" HorizontalAlignment="Left" Content="Install ShareX Chrome extension..." IsEnabled="{Binding ChromeExtensionSupport}" Click="OnOpenChromeExtensionClick"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                            <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding WindowsIntegrationVisible}">
-                                <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="section-title" Text="Firefox addon"/>
-                                        <CheckBox Classes="setting" Content="Enable Firefox addon support" IsChecked="{Binding FirefoxAddonSupport, Mode=TwoWay}"/>
-                                        <Button Classes="compact" HorizontalAlignment="Left" Content="Install ShareX Firefox addon..." IsEnabled="{Binding FirefoxAddonSupport}" Click="OnOpenFirefoxAddonClick"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                            <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding SteamIntegrationVisible}">
-                                <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="section-title" Text="Steam"/>
-                                        <CheckBox Classes="setting" Content="While ShareX is open, show &quot;In-App&quot; in Steam" IsChecked="{Binding SteamShowInApp, Mode=TwoWay}"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -290,10 +261,8 @@
                             <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
                                 <StackPanel Spacing="6">
                                     <TextBlock Classes="section-title" Text="Export and import"/>
-                                    <TextBlock Classes="hint" Text="Do not share an exported backup. It can contain private information such as account details and upload history."/>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <CheckBox Classes="setting" Content="Settings" IsChecked="{Binding ExportSettings, Mode=TwoWay}"/>
-                                        <CheckBox Classes="setting" Content="History" IsChecked="{Binding ExportHistory, Mode=TwoWay}"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <Button Classes="compact" Content="Export..." IsEnabled="{Binding CanExport}" Click="OnExportClick"/>
@@ -347,115 +316,13 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Clipboard formats -->
-                    <ScrollViewer controls:SettingsSearch.PageId="clipboard-formats" IsVisible="{Binding IsClipboardFormatsPage}">
-                        <StackPanel Margin="28,24,28,32" MaxWidth="820" HorizontalAlignment="Left">
-                            <Grid Classes="page-title" controls:SettingsSearch.IsPageTitle="True" ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                                <TextBlock Classes="icon page-title-icon" Text="{x:Static theming:LucideIcons.clipboard_list}"/>
-                                <TextBlock Grid.Column="1" Classes="page-title-text" Text="Clipboard formats"/>
-                            </Grid>
-                            <TextBlock Classes="hint" Margin="0,0,0,8" Text="These formats appear under the Copy submenu in the main window context menu."/>
-                            <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                <StackPanel Spacing="5">
-                                    <ListBox Classes="settings-list"
-                                             MinHeight="260"
-                                             ItemsSource="{Binding ClipboardFormats}"
-                                             SelectedItem="{Binding SelectedClipboardFormat, Mode=TwoWay}">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate x:DataType="local:ClipboardFormatItem">
-                                                <StackPanel Margin="4,2">
-                                                    <TextBlock Text="{Binding Description}" Foreground="{DynamicResource ShareX.Brush.Text}" FontWeight="Normal"/>
-                                                    <TextBlock Classes="hint" Text="{Binding Format}" TextTrimming="CharacterEllipsis"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <Button Classes="compact" Content="Add..." Click="OnAddClipboardFormatClick"/>
-                                        <Button Classes="compact" Content="Edit..." IsEnabled="{Binding HasSelectedClipboardFormat}" Click="OnEditClipboardFormatClick"/>
-                                        <Button Classes="compact" Content="Remove" IsEnabled="{Binding HasSelectedClipboardFormat}" Click="OnRemoveClipboardFormatClick"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <!-- Upload -->
-                    <ScrollViewer controls:SettingsSearch.PageId="upload" IsVisible="{Binding IsUploadPage}">
-                        <StackPanel Margin="28,24,28,32" MaxWidth="900" HorizontalAlignment="Left">
-                            <Grid Classes="page-title" controls:SettingsSearch.IsPageTitle="True" ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                                <TextBlock Classes="icon page-title-icon" Text="{x:Static theming:LucideIcons.upload}"/>
-                                <TextBlock Grid.Column="1" Classes="page-title-text" Text="Upload"/>
-                            </Grid>
-                            <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                <StackPanel Spacing="6">
-                                    <Grid ColumnDefinitions="240,*" ColumnSpacing="8">
-                                        <TextBlock Text="Simultaneous upload limit:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                                            <NumericUpDown Classes="form-control" Minimum="0" Maximum="25" Value="{Binding UploadLimit, Mode=TwoWay}"/>
-                                            <TextBlock Classes="hint" Text="0 disables the limit" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="240,*" ColumnSpacing="8">
-                                        <TextBlock Text="Buffer size:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <ComboBox Grid.Column="1" Classes="form-control" ItemsSource="{Binding BufferSizeOptions}" SelectedItem="{Binding SelectedBufferSize, Mode=TwoWay}"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="240,*" ColumnSpacing="8">
-                                        <TextBlock Text="Number of times to retry if upload fails:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <NumericUpDown Grid.Column="1" Classes="form-control" Minimum="0" Maximum="5" Value="{Binding MaxUploadFailRetry, Mode=TwoWay}"/>
-                                    </Grid>
-                                    <CheckBox Classes="setting" Content="Use secondary uploaders in order of preference when retrying" IsChecked="{Binding UseSecondaryUploaders, Mode=TwoWay}"/>
-                                </StackPanel>
-                            </Border>
-                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
-                                <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="section-title" Text="Secondary image uploaders"/>
-                                        <ListBox Classes="settings-list" ItemsSource="{Binding SecondaryImageUploaders}" SelectedItem="{Binding SelectedImageUploader, Mode=TwoWay}"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <Button Classes="compact" Content="Move up" Click="OnMoveImageUploaderUpClick"/>
-                                            <Button Classes="compact" Content="Move down" Click="OnMoveImageUploaderDownClick"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="1" Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="section-title" Text="Secondary text uploaders"/>
-                                        <ListBox Classes="settings-list" ItemsSource="{Binding SecondaryTextUploaders}" SelectedItem="{Binding SelectedTextUploader, Mode=TwoWay}"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <Button Classes="compact" Content="Move up" Click="OnMoveTextUploaderUpClick"/>
-                                            <Button Classes="compact" Content="Move down" Click="OnMoveTextUploaderDownClick"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="2" Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Classes="section-title" Text="Secondary file uploaders"/>
-                                        <ListBox Classes="settings-list" ItemsSource="{Binding SecondaryFileUploaders}" SelectedItem="{Binding SelectedFileUploader, Mode=TwoWay}"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <Button Classes="compact" Content="Move up" Click="OnMoveFileUploaderUpClick"/>
-                                            <Button Classes="compact" Content="Move down" Click="OnMoveFileUploaderDownClick"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <!-- History -->
+                    <!-- Recent tasks -->
                     <ScrollViewer controls:SettingsSearch.PageId="history" IsVisible="{Binding IsHistoryPage}">
                         <StackPanel Margin="28,24,28,32" MaxWidth="720" HorizontalAlignment="Left">
                             <Grid Classes="page-title" controls:SettingsSearch.IsPageTitle="True" ColumnDefinitions="Auto,*" ColumnSpacing="9">
                                 <TextBlock Classes="icon page-title-icon" Text="{x:Static theming:LucideIcons.history}"/>
-                                <TextBlock Grid.Column="1" Classes="page-title-text" Text="History"/>
+                                <TextBlock Grid.Column="1" Classes="page-title-text" Text="Recent tasks"/>
                             </Grid>
-                            <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Classes="section-title" Text="History"/>
-                                    <CheckBox Classes="setting" Content="Save tasks to history" IsChecked="{Binding HistorySaveTasks, Mode=TwoWay}"/>
-                                    <CheckBox Classes="setting" Content="Only save if URL is not empty" IsChecked="{Binding HistoryCheckURL, Mode=TwoWay}"/>
-                                </StackPanel>
-                            </Border>
                             <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
                                 <StackPanel Spacing="4">
                                     <TextBlock Classes="section-title" Text="Recent tasks"/>
@@ -464,7 +331,6 @@
                                         <TextBlock Text="Maximum number of tasks to save:" VerticalAlignment="Center" FontWeight="Normal"/>
                                         <NumericUpDown Grid.Column="1" Classes="form-control" Minimum="1" Maximum="10000" Value="{Binding RecentTasksMaxCount, Mode=TwoWay}"/>
                                     </Grid>
-                                    <CheckBox Classes="setting" Content="Show recent tasks in main window on startup" IsChecked="{Binding RecentTasksShowInMainWindow, Mode=TwoWay}"/>
                                     <CheckBox Classes="setting" Content="Show recent tasks in tray menu" IsChecked="{Binding RecentTasksShowInTrayMenu, Mode=TwoWay}"/>
                                     <CheckBox Classes="setting" Content="In tray menu show most recent tasks first" IsChecked="{Binding RecentTasksTrayMenuMostRecentFirst, Mode=TwoWay}"/>
                                 </StackPanel>
@@ -487,40 +353,6 @@
                                     <Grid ColumnDefinitions="190,*" ColumnSpacing="8" IsVisible="{Binding DefaultPrinterOverrideVisible}">
                                         <TextBlock Text="Default printer override:" VerticalAlignment="Center" FontWeight="Normal"/>
                                         <TextBox Grid.Column="1" Classes="form-control" Text="{Binding DefaultPrinterOverride, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <!-- Proxy -->
-                    <ScrollViewer controls:SettingsSearch.PageId="proxy" IsVisible="{Binding IsProxyPage}">
-                        <StackPanel Margin="28,24,28,32" MaxWidth="720" HorizontalAlignment="Left">
-                            <Grid Classes="page-title" controls:SettingsSearch.IsPageTitle="True" ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                                <TextBlock Classes="icon page-title-icon" Text="{x:Static theming:LucideIcons.network}"/>
-                                <TextBlock Grid.Column="1" Classes="page-title-text" Text="Proxy"/>
-                            </Grid>
-                            <Border Classes="section-card" controls:SettingsSearch.IsPanel="True">
-                                <StackPanel Spacing="6">
-                                    <Grid ColumnDefinitions="170,*" ColumnSpacing="8">
-                                        <TextBlock Text="Proxy configuration:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <ComboBox Grid.Column="1" Classes="form-control" ItemsSource="{Binding ProxyMethodOptions}" SelectedItem="{Binding SelectedProxyMethod, Mode=TwoWay}"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="170,*" ColumnSpacing="8">
-                                        <TextBlock Text="Username:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <TextBox Grid.Column="1" Classes="form-control" IsEnabled="{Binding ProxyCredentialsEnabled}" Text="{Binding ProxyUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="170,*" ColumnSpacing="8">
-                                        <TextBlock Text="Password:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <TextBox Grid.Column="1" Classes="form-control" PasswordChar="●" IsEnabled="{Binding ProxyCredentialsEnabled}" Text="{Binding ProxyPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="170,*" ColumnSpacing="8">
-                                        <TextBlock Text="Host:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <TextBox Grid.Column="1" Classes="form-control" IsEnabled="{Binding ManualProxyEnabled}" Text="{Binding ProxyHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="170,*" ColumnSpacing="8">
-                                        <TextBlock Text="Port:" VerticalAlignment="Center" FontWeight="Normal"/>
-                                        <NumericUpDown Grid.Column="1" Classes="form-control" Minimum="0" Maximum="65535" IsEnabled="{Binding ManualProxyEnabled}" Value="{Binding ProxyPort, Mode=TwoWay}"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -592,76 +424,6 @@
                 </Grid>
             </Grid>
 
-            <Border x:Name="ClipboardFormatEditorOverlay"
-                    Grid.ColumnSpan="2"
-                    ZIndex="100"
-                    IsVisible="False"
-                    Background="{DynamicResource ShareX.Brush.Overlay.Modal}">
-                <Border Width="640"
-                        MaxHeight="560"
-                        Padding="16"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Background="{DynamicResource ShareX.Brush.Background.Panel}"
-                        BorderBrush="{DynamicResource ShareX.Brush.Border}"
-                        BorderThickness="1"
-                        CornerRadius="8">
-                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                            <TextBlock Classes="icon"
-                                       Text="{x:Static theming:LucideIcons.clipboard_list}"
-                                       FontSize="21"
-                                       Foreground="{DynamicResource ShareX.Brush.Accent}"
-                                       VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="1" Spacing="1">
-                                <TextBlock x:Name="ClipboardFormatEditorTitle"
-                                           Text="Add clipboard format"
-                                           FontSize="19"
-                                           FontWeight="SemiBold"/>
-                                <TextBlock Classes="hint"
-                                           Text="Customize the text copied from completed uploads."/>
-                            </StackPanel>
-                        </Grid>
-
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <StackPanel Spacing="8" Margin="0,0,4,0">
-                                <StackPanel Spacing="3">
-                                    <TextBlock Text="Description" FontWeight="Normal"/>
-                                    <TextBox x:Name="ClipboardFormatDescriptionBox" Classes="form-control"/>
-                                </StackPanel>
-                                <StackPanel Spacing="3">
-                                    <TextBlock Text="Format" FontWeight="Normal"/>
-                                    <TextBox x:Name="ClipboardFormatTextBox"
-                                             Classes="form-control"
-                                             Height="150"
-                                             AcceptsReturn="True"
-                                             VerticalContentAlignment="Top"
-                                             TextWrapping="Wrap"
-                                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                                    <TextBlock Classes="hint" Text="Right-click to insert a variable."/>
-                                </StackPanel>
-                                <TextBlock x:Name="ClipboardFormatSupportedVariablesText"
-                                           Classes="hint"
-                                           TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </ScrollViewer>
-
-                        <StackPanel Grid.Row="2"
-                                    Orientation="Horizontal"
-                                    Spacing="8"
-                                    HorizontalAlignment="Right">
-                            <Button Classes="compact"
-                                    MinWidth="84"
-                                    Content="Save"
-                                    Click="OnSaveClipboardFormatClick"/>
-                            <Button Classes="compact"
-                                    MinWidth="84"
-                                    Content="Cancel"
-                                    Click="OnCancelClipboardFormatClick"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Border>
         </Grid>
     </ThemeVariantScope>
 </Window>

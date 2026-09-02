@@ -24,11 +24,8 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
-using ShareX.HistoryLib;
-using ShareX.UploadersLib;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 namespace ShareX
@@ -39,29 +36,6 @@ namespace ShareX
 
         public string Status { get; set; }
         public TaskJob Job { get; set; }
-
-        public bool IsUploadJob
-        {
-            get
-            {
-                switch (Job)
-                {
-                    case TaskJob.Job:
-                        return TaskSettings.AfterCaptureJob.HasFlag(AfterCaptureTasks.UploadImageToHost);
-                    case TaskJob.DataUpload:
-                    case TaskJob.FileUpload:
-                    case TaskJob.TextUpload:
-                    case TaskJob.ShortenURL:
-                    case TaskJob.ShareURL:
-                    case TaskJob.DownloadUpload:
-                        return true;
-                }
-
-                return false;
-            }
-        }
-
-        public ProgressManager Progress { get; set; }
 
         private string filePath;
 
@@ -91,65 +65,14 @@ namespace ShareX
         public EDataType DataType { get; set; }
         public TaskMetadata Metadata { get; set; }
 
-        public EDataType UploadDestination
-        {
-            get
-            {
-                if ((DataType == EDataType.Image && TaskSettings.ImageDestination == ImageDestination.FileUploader) ||
-                    (DataType == EDataType.Text && TaskSettings.TextDestination == TextDestination.FileUploader))
-                {
-                    return EDataType.File;
-                }
-
-                return DataType;
-            }
-        }
-
-        public string UploaderHost
-        {
-            get
-            {
-                if (IsUploadJob)
-                {
-                    switch (UploadDestination)
-                    {
-                        case EDataType.Image:
-                            return TaskSettings.ImageDestination.GetLocalizedDescription();
-                        case EDataType.Text:
-                            return TaskSettings.TextDestination.GetLocalizedDescription();
-                        case EDataType.File:
-                            switch (DataType)
-                            {
-                                case EDataType.Image:
-                                    return TaskSettings.ImageFileDestination.GetLocalizedDescription();
-                                case EDataType.Text:
-                                    return TaskSettings.TextFileDestination.GetLocalizedDescription();
-                                default:
-                                case EDataType.File:
-                                    return TaskSettings.FileDestination.GetLocalizedDescription();
-                            }
-                        case EDataType.URL:
-                            if (Job == TaskJob.ShareURL)
-                            {
-                                return TaskSettings.URLSharingServiceDestination.GetLocalizedDescription();
-                            }
-
-                            return TaskSettings.URLShortenerDestination.GetLocalizedDescription();
-                    }
-                }
-
-                return null;
-            }
-        }
-
         public DateTime TaskStartTime { get; set; }
         public DateTime TaskEndTime { get; set; }
 
         public TimeSpan TaskDuration => TaskEndTime - TaskStartTime;
 
-        public Stopwatch UploadDuration { get; set; }
+        public List<string> Errors { get; private set; }
 
-        public UploadResult Result { get; set; }
+        public bool IsError => Errors.Count > 0;
 
         public TaskInfo(TaskSettings taskSettings)
         {
@@ -160,7 +83,12 @@ namespace ShareX
 
             TaskSettings = taskSettings;
             Metadata = new TaskMetadata();
-            Result = new UploadResult();
+            Errors = new List<string>();
+        }
+
+        public string ErrorsToString()
+        {
+            return string.Join(Environment.NewLine + Environment.NewLine, Errors);
         }
 
         public Dictionary<string, string> GetTags()
@@ -190,31 +118,7 @@ namespace ShareX
 
         public override string ToString()
         {
-            string text = Result.ToString();
-
-            if (string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(FilePath))
-            {
-                text = FilePath;
-            }
-
-            return text;
-        }
-
-        public HistoryItem GetHistoryItem()
-        {
-            return new HistoryItem
-            {
-                FileName = FileName,
-                FilePath = FilePath,
-                DateTime = TaskEndTime,
-                Type = DataType.ToString(),
-                Host = UploaderHost,
-                URL = Result.URL,
-                ThumbnailURL = Result.ThumbnailURL,
-                DeletionURL = Result.DeletionURL,
-                ShortenedURL = Result.ShortenedURL,
-                Tags = GetTags()
-            };
+            return FilePath;
         }
     }
 }

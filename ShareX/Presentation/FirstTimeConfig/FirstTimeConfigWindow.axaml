@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -68,10 +68,6 @@
                         <CheckBox Classes="integration-option"
                                   Content="Show ShareX in &quot;Send to&quot; menu"
                                   IsChecked="{Binding SendToMenu, Mode=TwoWay}"/>
-                        <CheckBox Classes="integration-option"
-                                  Content="While ShareX is open, show &quot;In-app&quot; in Steam"
-                                  IsVisible="{Binding SteamOptionVisible}"
-                                  IsChecked="{Binding SteamShowInApp, Mode=TwoWay}"/>
                     </StackPanel>
                 </Border>
 
