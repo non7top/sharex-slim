@@ -38,6 +38,19 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      # A tag is the source of truth for the version when there is one, so the
+      # produced file names always match the release they belong to.
+      - name: Resolve version
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}".TrimStart("v")
+            echo "VERSION_ARG=-p:Version=$version" >> $env:GITHUB_ENV
+            echo "Building tagged version $version"
+          } else {
+            echo "VERSION_ARG=" >> $env:GITHUB_ENV
+            echo "Building untagged; version comes from Directory.Build.props"
+          }
+
       - name: Restore NuGet packages
         run: dotnet restore --runtime "${{ env.RUNTIME_ID }}" "${{ env.SOLUTION_FILE_PATH }}"
 
@@ -46,6 +59,7 @@ jobs:
           dotnet build --no-restore
           --configuration "${{ matrix.configuration }}"
           -p:Platform="${{ env.PLATFORM }}"
+          ${{ env.VERSION_ARG }}
           --self-contained true /m:1
           "${{ env.SOLUTION_FILE_PATH }}"
 
@@ -68,28 +82,14 @@ jobs:
           & "ShareX.Setup\bin\Release\win-x64\ShareX-slim.Setup.exe"
           -silent -job Release
 
-      - name: Read APP_VERSION
-        if: matrix.configuration == 'Release'
-        run: |
-          $exe = "ShareX\bin\Release\win-x64\ShareX-slim.exe"
-          $version = (Get-Item $exe).VersionInfo.ProductVersion
-          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
-
-      - name: Upload installer
+      - name: Upload packages
         if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v7
         with:
-          name: ShareX-slim-setup-${{ env.PLATFORM }}
+          name: packages-${{ env.PLATFORM }}
           path: |
             Output/ShareX-slim-*-setup-${{ env.PLATFORM }}.exe
             Output/ShareX-slim-*-setup-${{ env.PLATFORM }}.exe.sha256
-
-      - name: Upload portable zip
-        if: matrix.configuration == 'Release'
-        uses: actions/upload-artifact@v7
-        with:
-          name: ShareX-slim-portable-${{ env.PLATFORM }}
-          path: |
             Output/ShareX-slim-*-portable-${{ env.PLATFORM }}.zip
             Output/ShareX-slim-*-portable-${{ env.PLATFORM }}.zip.sha256
 
@@ -99,3 +99,72 @@ jobs:
         with:
           name: ShareX-slim-Debug-${{ env.PLATFORM }}
           path: ShareX/bin/Debug/${{ env.RUNTIME_ID }}/
+
+  release:
+    name: Release
+    needs: build
+    if: github.ref_type == 'tag' || github.ref == 'refs/heads/slim'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          name: packages-x64
+          path: dist
+
+      - name: Write release notes
+        run: |
+          {
+            if [ "${{ github.ref_type }}" = "tag" ]; then
+              echo "ShareX-slim ${{ github.ref_name }}"
+            else
+              echo "Rolling build of the \`slim\` branch, rebuilt on every push."
+              echo "For a fixed version, use a tagged release instead."
+            fi
+            echo
+            echo "| File | Purpose |"
+            echo "| --- | --- |"
+            echo "| \`*-setup-x64.exe\` | Installer. Does not touch an existing ShareX install. |"
+            echo "| \`*-portable-x64.zip\` | Unzip and run; settings stay in the folder. |"
+            echo
+            echo "Commit: \`${{ github.sha }}\`"
+            echo
+            echo "| File | SHA256 |"
+            echo "| --- | --- |"
+            for f in dist/*.sha256; do
+              name=$(basename "$f" .sha256)
+              sum=$(cut -d' ' -f1 "$f")
+              echo "| $name | \`$sum\` |"
+            done
+          } > notes.md
+          cat notes.md
+
+      - name: Publish tagged release
+        if: github.ref_type == 'tag'
+        run: >
+          gh release create "${{ github.ref_name }}"
+          dist/*
+          --repo "${{ github.repository }}"
+          --title "ShareX-slim ${{ github.ref_name }}"
+          --notes-file notes.md
+
+      # One rolling release so there is always a current download that does not
+      # expire and does not need a GitHub login, unlike run artifacts.
+      - name: Update rolling latest build
+        if: github.ref == 'refs/heads/slim'
+        run: |
+          gh release delete latest --repo "${{ github.repository }}" --yes --cleanup-tag || true
+          gh release create latest \
+            dist/* \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Latest slim build" \
+            --notes-file notes.md \
+            --prerelease
