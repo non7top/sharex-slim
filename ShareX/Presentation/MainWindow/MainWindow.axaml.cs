@@ -338,7 +338,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         if (section.CreateChildren != null)
         {
-            TextBlock chevron = CreateAccentMenuIcon(LucideIcons.chevron_right, 14);
+            Control chevron = CreateAccentMenuIcon(LucideIcons.chevron_right, 14);
             chevron.Opacity = 0.7;
             Grid.SetColumn(chevron, 3);
             grid.Children.Add(chevron);
@@ -521,10 +521,30 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         return text;
     }
 
-    private static TextBlock CreateAccentMenuIcon(string glyph, double size)
+    private static Control CreateAccentMenuIcon(string glyph, double size)
     {
+        // Prefer the multi-coloured raster icons the menus used before they
+        // moved to Avalonia; they are far easier to tell apart at a glance.
+        Avalonia.Media.Imaging.Bitmap? legacy = LegacyMenuIcons.ForGlyph(glyph);
+
+        if (legacy != null)
+        {
+            return new Image
+            {
+                Source = legacy,
+                Width = size,
+                Height = size,
+                Stretch = Avalonia.Media.Stretch.Uniform,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+        }
+
+        // No legacy equivalent: fall back to the glyph, coloured by function so
+        // it still stands out rather than blending into the text colour.
         TextBlock icon = CreateLucideText(glyph, size);
         icon.Classes.Add("accent-menu-icon");
+        icon.Foreground = LucideIconPalette.BrushForGlyph(glyph);
         return icon;
     }
 
