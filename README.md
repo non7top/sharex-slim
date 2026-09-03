@@ -37,10 +37,21 @@ it on, each arrow is labelled with its pixel length near the midpoint, rotated t
 follow the arrow and kept upright. The number is the straight-line distance
 between the arrow's endpoints.
 
+## Downloads
+
+Grab a build from [Releases](https://github.com/non7top/sharex-slim/releases):
+
+- **`latest`** — a rolling prerelease, rebuilt on every push to `slim`.
+- **`vX.Y.Z`** — a fixed version. Pushing a `v*.*.*` tag publishes one, and the
+  tag also sets the version stamped into the binaries and the file names.
+
+Release assets are permanent and need no GitHub login, unlike the artifacts
+attached to individual workflow runs (those expire after 90 days).
+
 ## Building
 
 GitHub Actions (`.github/workflows/build.yml`) builds x64 only and, for the
-Release configuration, publishes two artifacts plus their `.sha256` files:
+Release configuration, publishes two files plus their `.sha256` companions:
 
 - `ShareX-slim-<version>-setup-x64.exe` — Inno Setup installer. Installs per-user
   or machine-wide, optional desktop/send-to/startup shortcuts, an "Annotate with
