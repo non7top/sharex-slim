@@ -525,6 +525,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         TextBlock icon = CreateLucideText(glyph, size);
         icon.Classes.Add("accent-menu-icon");
+        // Colour by what the entry does, so a menu is not a column of
+        // identically tinted glyphs. A local value wins over the class style.
+        icon.Foreground = LucideIconPalette.BrushForGlyph(glyph);
         return icon;
     }
 
