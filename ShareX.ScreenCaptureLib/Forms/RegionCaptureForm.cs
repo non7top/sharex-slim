@@ -1,4 +1,4 @@
-#region License Information (GPL v3)
+﻿#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -1440,9 +1440,22 @@ namespace ShareX.ScreenCaptureLib
                     g.Clear(canvasBackgroundColor);
                 }
 
-                g.PixelOffsetMode = PixelOffsetMode.Half;
-                g.DrawImage(img, new Rectangle(0, 0, width, height), srcRect, GraphicsUnit.Pixel);
-                g.PixelOffsetMode = PixelOffsetMode.None;
+                // Sample the annotated canvas, not the untouched capture, so shapes
+                // already drawn are visible under the magnifier instead of the
+                // pixels they cover.
+                Rectangle sampleRect = srcRect.Round();
+
+                using (Bitmap annotated = RenderAnnotatedRegion(img, sampleRect))
+                {
+                    Image source = annotated ?? img;
+                    RectangleF sourceRect = annotated != null
+                        ? new RectangleF(0, 0, sampleRect.Width, sampleRect.Height)
+                        : srcRect;
+
+                    g.PixelOffsetMode = PixelOffsetMode.Half;
+                    g.DrawImage(source, new Rectangle(0, 0, width, height), sourceRect, GraphicsUnit.Pixel);
+                    g.PixelOffsetMode = PixelOffsetMode.None;
+                }
 
                 using (SolidBrush crosshairBrush = new SolidBrush(Color.FromArgb(125, Color.LightBlue)))
                 {
@@ -1471,6 +1484,70 @@ namespace ShareX.ScreenCaptureLib
                 {
                     g.DrawRectangle(Pens.White, (width - pixelSize) / 2, (height - pixelSize) / 2, pixelSize - 2, pixelSize - 2);
                 }
+            }
+
+            return bmp;
+        }
+
+        /// <summary>
+        /// Composites the shapes over the given region of the canvas, in canvas
+        /// image coordinates. Returns null when there is nothing drawn yet, so
+        /// the caller can sample the canvas directly.
+        /// </summary>
+        private Bitmap RenderAnnotatedRegion(Image img, Rectangle imageRect)
+        {
+            if (ShapeManager == null || imageRect.Width < 1 || imageRect.Height < 1)
+            {
+                return null;
+            }
+
+            BaseEffectShape[] effectShapes = ShapeManager.EffectShapes;
+            BaseDrawingShape[] drawingShapes = ShapeManager.DrawingShapes;
+
+            if (effectShapes.Length == 0 && drawingShapes.Length == 0)
+            {
+                return null;
+            }
+
+            Bitmap bmp = new Bitmap(imageRect.Width, imageRect.Height);
+
+            try
+            {
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    Rectangle destRect = new Rectangle(0, 0, imageRect.Width, imageRect.Height);
+
+                    if (!new Rectangle(0, 0, img.Width, img.Height).Contains(imageRect))
+                    {
+                        g.Clear(canvasBackgroundColor);
+                    }
+
+                    g.PixelOffsetMode = PixelOffsetMode.Half;
+                    g.DrawImage(img, destRect, imageRect, GraphicsUnit.Pixel);
+                    g.PixelOffsetMode = PixelOffsetMode.None;
+
+                    // Shapes are positioned in client coordinates, so shift them onto
+                    // this region and clip, keeping the work proportional to the
+                    // magnifier rather than the whole canvas.
+                    g.SetClip(destRect);
+                    g.TranslateTransform(-(CanvasRectangle.X + imageRect.X), -(CanvasRectangle.Y + imageRect.Y));
+
+                    foreach (BaseEffectShape effectShape in effectShapes)
+                    {
+                        effectShape?.OnDraw(g);
+                    }
+
+                    foreach (BaseDrawingShape drawingShape in drawingShapes)
+                    {
+                        drawingShape?.OnDraw(g);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e);
+                bmp.Dispose();
+                return null;
             }
 
             return bmp;
